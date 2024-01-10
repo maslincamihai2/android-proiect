@@ -4,14 +4,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.GridView;
-import android.widget.ListView;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class Galerie extends AppCompatActivity {
@@ -31,8 +26,7 @@ public class Galerie extends AppCompatActivity {
         GridView gridView = findViewById(R.id.gridView);
 
         // Adapter ce contine colectia de imagini si layout pentru afisarea unei imagini din grid
-        ArrayAdapter<Integer> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1, imageIds);
+        CustomAdapter adapter = new CustomAdapter(this, R.layout.grid_view_item, imageIds);
         gridView.setAdapter(adapter);
 
         // Listener atingere imagine din grid
