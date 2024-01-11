@@ -7,28 +7,48 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 
-public class CustomAdapter extends ArrayAdapter<Integer> {
-    private final Context context;
+import com.squareup.picasso.Picasso;
 
-    CustomAdapter(Context context, int resource, Integer[] objects) {
-        super(context, resource, objects);
+import java.util.ArrayList;
+
+public class CustomAdapter extends ArrayAdapter<Integer> {
+
+    private Context context;
+    private ArrayList<Photo> colectieObiectePhoto;
+
+    CustomAdapter(Context context, int resource, ArrayList<Photo> colectieObiectePhoto) {
+        super(context, resource);
         this.context = context;
+        this.colectieObiectePhoto = colectieObiectePhoto;
+    }
+
+    // Daca nu functioneaza corect getCount() atunci
+    // Nu se apeleaza getView()
+    @Override
+    public int getCount(){
+        return colectieObiectePhoto.size();
     }
 
     @Override
     public View getView(int position, View view, ViewGroup parent) {
         // Creem un obiect software folosind fisierul XML  grid_view_item
         if (view == null) {
-            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            LayoutInflater inflater = LayoutInflater.from(context);
             view = inflater.inflate(R.layout.grid_view_item, parent, false);
-            System.out.println("***");
         }
 
         ImageView imageView = view.findViewById(R.id.imageView);
-        // incarcare imagine
-        // Metoda getItem() e mostenita de la superclasa
-        imageView.setImageResource(getItem(position));
+        // incarcare imagine folosind Picasso
+        Photo photo = colectieObiectePhoto.get(position);
+        Src src = photo.src;
+        String url = src.portrait;
+
+        Picasso instantaPicasso = Picasso.get();
+        // Metoda load() incarca imaginea asincron
+        instantaPicasso.load(url).into(imageView);
+        System.out.println(url);
 
         return view;
     }
+
 }
