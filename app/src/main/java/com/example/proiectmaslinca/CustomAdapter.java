@@ -50,5 +50,4 @@ public class CustomAdapter extends ArrayAdapter<Integer> {
 
         return view;
     }
-
 }

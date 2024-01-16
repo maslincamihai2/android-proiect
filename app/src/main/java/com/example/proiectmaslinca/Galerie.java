@@ -1,12 +1,17 @@
 package com.example.proiectmaslinca;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.gson.Gson;
 
@@ -20,11 +25,14 @@ import okhttp3.Response;
 import okhttp3.Call;
 import okhttp3.ResponseBody;
 
+import android.Manifest;
 
 public class Galerie extends AppCompatActivity {
 
+    private Context context = this;
     private String API_URL = "https://api.pexels.com/v1/search?query=";
     private String AUTH_TOKEN = "zAaAIHSnT2MhXQReGR1cmyX3OE1E3PhZb6HUo1f3d3Alu5Bd5adlt0uZ";
+    private int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 123; //cod random pentru permisiune
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,8 +111,55 @@ public class Galerie extends AppCompatActivity {
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Se obtine obiectul Photo corespunzator imaginii apasate
+                Photo photo = colectieObiectePhoto.get(position);
+                // Se obtine url-ul imaginii din raspunsul primit de la API
+                Src src = photo.src;
+                String url = src.portrait;
 
+                // Verifica daca permisiunea a fost data anterior
+                int verificaPermisiune = ContextCompat.checkSelfPermission(context,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+                if (verificaPermisiune != PackageManager.PERMISSION_GRANTED) {
+                    // Daca nu a fost data permisiunea anterior
+                    // Se cere permisiunea acum folosind codul random din variabila MY_PERMISSION_REQUEST
+
+                    // Metoda requestPermissions() cere ca permisiunile sa fie intr-un array
+                    String[] permisiuni = new String[1];
+                    permisiuni[0] = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+
+                    // Aici se cer permisiunile
+                    // Si se apeleaza implicit onRequestPermissionsResult() definit mai jos
+                    ActivityCompat.requestPermissions(Galerie.this,
+                            permisiuni,
+                            MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+                } else {
+                    // Daca permisiunea a fost acceptata anterior se incepe direct descarcarea
+                    TaskDownloadImagine task = new TaskDownloadImagine(context);
+                    task.execute(url, "exemplu");
+                }
             }
         });
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        // Se verifica request codul si in functie de acesta se poate cere o permisiune sau alta
+        if (requestCode == MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE) {
+            // Daca permisiunea a fost acordata din interfata
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Se afiseaza un mesaj si trebuie reincercata descarcarea
+                Toast.makeText(this, "Permisiune acordata. Reincercati descarcarea.",
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                // Altfel se afiseaza un alt mesaj de avertizare
+                Toast.makeText(this, "Permisiunea nu a fost acordata",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }
